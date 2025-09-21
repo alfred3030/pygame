@@ -7,8 +7,14 @@ from pygame.math import Vector2
 pygame.init()
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("拖曳投籃 - 特效版")
+pygame.display.set_caption("拖曳投籃 - 特效進球版")
 clock = pygame.time.Clock()
+
+# ---------- 音樂 ----------
+pygame.mixer.init()
+pygame.mixer.music.load("assets/bgm.mp3")   # 換成你的音樂檔名
+pygame.mixer.music.play(-1)          # -1 表示無限循環
+pygame.mixer.music.set_volume(0.5)   # 音量 0.0 ~ 1.0
 
 # ---------- 球 ----------
 ball_start = Vector2(200, 500)
@@ -28,6 +34,14 @@ rim_thickness = 5
 left_rim = pygame.Rect(hoop_x, hoop_y, rim_thickness, hoop_height*4)
 right_rim = pygame.Rect(hoop_x + hoop_width - rim_thickness, hoop_y, rim_thickness, hoop_height*4)
 
+# 籃框口（判定進球區域）
+hoop_goal = pygame.Rect(
+    hoop_x + rim_thickness,
+    hoop_y,
+    hoop_width - 2 * rim_thickness,
+    10
+)
+
 # ---------- 草地 ----------
 grass = pygame.Rect(0, HEIGHT - 10, WIDTH, 10)
 
@@ -35,6 +49,7 @@ grass = pygame.Rect(0, HEIGHT - 10, WIDTH, 10)
 score = 0
 font = pygame.font.SysFont(None, 48)
 scored = False
+effect_index = 0
 
 # ---------- 特效 ----------
 particles = []
@@ -64,8 +79,10 @@ def effect_flash(_pos):
 def update_flash():
     global flash_timer
     if flash_timer > 0:
-        if flash_timer % 2 == 0:
-            screen.fill((255, 255, 255))
+        s = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        alpha = 150 if flash_timer % 2 == 0 else 80
+        s.fill((255, 255, 255, alpha))
+        screen.blit(s, (0,0))
         flash_timer -= 1
 
 def effect_confetti(_pos):
@@ -73,7 +90,10 @@ def effect_confetti(_pos):
     for _ in range(50):
         x = random.randint(0, WIDTH)
         y = random.randint(-100, 0)
-        color = random.choice([(255,0,0), (0,255,0), (0,0,255), (255,255,0)])
+        color = random.choice([
+            (255,0,0), (0,255,0), (0,0,255),
+            (255,255,0), (200,0,200), (0,200,200)
+        ])
         confetti.append([x, y, color])
 
 def update_confetti():
@@ -169,13 +189,13 @@ while True:
             velocity.y = 0
 
     # ---------- 判斷進球 ----------
-    if hoop_x + rim_thickness < ball_pos.x < hoop_x + hoop_width - rim_thickness and ball_pos.y > hoop_y:
+    if ball_rect.colliderect(hoop_goal) and velocity.y > 0:
         if not scored:
             scored = True
             score += 1
             print("進球！")
 
-            # 觸發特效（輪流）
+            # 特效（輪流播放）
             effect_triggers[effect_index % len(effect_triggers)](ball_pos)
             effect_index += 1
 
@@ -212,4 +232,3 @@ while True:
 
     pygame.display.flip()
     clock.tick(60)
-

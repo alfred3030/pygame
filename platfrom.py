@@ -5,32 +5,46 @@ pygame.init()
 
 screen_width = 1000
 screen_height = 1000
-width = 150
-height = 150
+
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Platformer')
 
-# 設定幀率
-clock = pygame.time.Clock()
-fps = 60
+#define game variadles
+tile_size = 50
+
 
 # 載入並縮放圖片
-bg_img = pygame.image.load('assets/bg.png')
-bg_img = pygame.transform.scale(bg_img, (screen_width, screen_height))
+bg_img = pygame.image.load('assets/img/sky.png')
+sun_img = pygame.image.load('assets/img/sun.png')
 
-sun_img = pygame.image.load('assets/sun.png')
-sun_img = pygame.transform.scale(sun_img, (width, height))
+def draw_grid():
+	for line in range(0, 20):
+		pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (screen_width, line * tile_size))
+		pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_height))
 
+
+
+class Worls():
+      def __init__(self, data):
+            
+            #load images
+            dirt_img = pygame.image.load('assets/img/dirt.png')
+
+
+
+world_data = [
+
+]
 # 遊戲迴圈
 run = True
 while run:
-    clock.tick(fps)
-
+      
     # 畫背景和太陽
     screen.blit(bg_img, (0, 0))
     screen.blit(sun_img, (100, 100))
 
-    # 處理事件
+    draw_grid()
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False

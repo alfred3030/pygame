@@ -3,7 +3,6 @@ import sys
 
 pygame.init()
 pygame.mixer.init()  # 初始化音效模組
-
 # 載入音效檔案（shoot.wav 必須跟 .py 檔在同一資料夾）
 shoot_sound = pygame.mixer.Sound("assets/pew.wav")
 

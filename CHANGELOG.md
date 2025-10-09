@@ -1,4 +1,6 @@
 # 更新紀錄
+## 2025-10-09 v1.3
+- platform.pyplayer move , jump
 ## 2025-10-09 v1.2
 - platform.py map ,player
 ## 2025-10-08 v1.1

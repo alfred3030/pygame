@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word War - Language Survival</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            overflow: hidden;
+            font-family: 'Arial', 'Microsoft JhengHei', sans-serif;
+            height: 100vh;
+        }
+
+        .game-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HUD Header */
+        .hud-header {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #00ff88;
+        }
+
+        .status-bars {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .stat {
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #00ff88;
+            margin-bottom: 5px;
+        }
+
+        .stat-bar {
+            background: rgba(255, 255, 255, 0.1);
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stat-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00cc6a);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .vocabulary-fill {
+            background: linear-gradient(90deg, #ff6b6b, #ee5a52);
+        }
+
+        .player-info {
+            text-align: right;
+        }
+
+        .player-level {
+            font-size: 24px;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .player-xp {
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        .level-icon {
+            margin-right: 8px;
+            font-size: 20px;
+        }
+
+        /* Main Game Area */
+        .game-area {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* Mission Panel */
+        .mission-panel {
+            flex: 2;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .mission-title {
+            font-size: 24px;
+            color: #00ff88;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .mission-type {
+            text-align: center;
+            color: #ffd93d;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .mission-content {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .mission-question {
+            color: #ffd93d;
+            font-weight: bold;
+            margin: 15px 0 10px 0;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #00ff88;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            background: rgba(0, 255, 136, 0.2);
+            transform: translateX(5px);
+        }
+
+        .option-btn.correct {
+            background: rgba(0, 255, 136, 0.3);
+            border-color: #00ff88;
+        }
+
+        .option-btn.wrong {
+            background: rgba(255, 107, 107, 0.3);
+            border-color: #ff6b6b;
+        }
+
+        /* Inventory Panel */
+        .inventory-panel {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #ffd93d;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            color: #ffd93d;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 2px solid #ffd93d;
+            padding-bottom: 10px;
+        }
+
+        .inventory-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 3px solid #00ff88;
+        }
+
+        .item-name {
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .item-desc {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .item-count {
+            color: #ffd93d;
+            font-size: 14px;
+        }
+
+        /* Speaking Challenge */
+        .speaking-challenge {
+            background: rgba(255, 217, 61, 0.1);
+            border: 2px solid #ffd93d;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .speak-prompt {
+            font-size: 18px;
+            color: #ffd93d;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .speak-text {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 20px;
+            color: #fff;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .speak-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #ffd93d, #ffb400);
+            border: none;
+            color: #1a1a2e;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .speak-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 217, 61, 0.5);
+        }
+
+        .speak-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Feedback */
+        .feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px 50px;
+            border-radius: 15px;
+            border: 3px solid;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 1000;
+            animation: fadeInOut 2s forwards;
+        }
+
+        .feedback.success {
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+
+        .feedback.error {
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+        }
+
+        .next-mission-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            border: none;
+            color: #1a1a2e;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .next-mission-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .journal-entry {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            border-left: 3px solid #6c5ce7;
+        }
+
+        .word {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .translation {
+            color: #aaa;
+            font-size: 11px;
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            background: #1a1a2e;
+            border: 2px solid #00ff88;
+            color: #fff;
+        }
+        .modal-header {
+            border-bottom: 1px solid #00ff88;
+        }
+        .modal-footer {
+            border-top: 1px solid #00ff88;
+        }
+        .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+        .word-details-title {
+            color: #00ff88;
+            font-size: 24px;
+        }
+        .word-details-kk {
+            color: #ffd93d;
+            font-size: 18px;
+        }
+        .word-details-meaning {
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .word-details-sentence {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        /* Crafting button */
+        .craft-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            border: none;
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+        .craft-btn:hover {
+            transform: scale(1.05);
+        }
+        .craft-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- HUD Header -->
+        <div class="hud-header">
+            <div class="status-bars">
+                <div class="stat">
+                    <div class="stat-label">理解力 Comprehension</div>
+                    <div class="stat-bar" title="答對問題或完成任務來提升">
+                        <div class="stat-fill" id="comprehension-bar" style="width: 0%">0%</div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">詞彙量 Vocabulary</div>
+                    <div class="stat-bar" title="學習新單字來提升">
+                        <div class="stat-fill vocabulary-fill" id="vocabulary-bar" style="width: 0%">0%</div>
+                    </div>
+                </div>
+            </div>
+            <div class="player-info">
+                <div class="player-level"><span id="level-icon"></span>Level <span id="player-level">1</span></div>
+                <div class="player-xp">XP: <span id="player-xp">0</span>/<span id="xp-to-next-level">100</span></div>
+            </div>
+        </div>
+
+        <!-- Main Game Area -->
+        <div class="game-area">
+            <!-- Mission Panel -->
+            <div class="mission-panel">
+                <div class="mission-title" id="mission-title">🎯 Loading Mission...</div>
+                <div class="mission-type" id="mission-type"></div>
+                <div class="mission-content" id="mission-content"></div>
+                <div id="mission-options"></div>
+                <button class="next-mission-btn" id="next-mission-btn" style="display: none;">Next Mission →</button>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+                <!-- Inventory Panel -->
+                <div class="inventory-panel" style="flex: 1;">
+                    <div class="panel-title">📦 資源背包</div>
+                    <div id="inventory-list"></div>
+                    <button class="craft-btn" id="craft-hint-btn" onclick="craftHint()">製作提示 (鋼鐵x5)</button>
+                </div>
+
+                <!-- Journal Panel -->
+                <div class="inventory-panel" style="flex: 1;">
+                    <div class="panel-title">📖 生存日記</div>
+                    <div id="journal-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Word Detail Modal -->
+    <div class="modal fade" id="wordDetailModal" tabindex="-1" aria-labelledby="wordDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="wordDetailModalLabel">Word Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="wordDetailBody">
+                    <!-- Content will be injected by JS -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Word Database
+        const wordDB = {
+            'survive': { kk: '[sɚˈvaɪv]', meaning: 'v. 生存；存活', sentence: 'You need courage and skills to survive in the wild.' },
+            'weapon': { kk: '[ˈwɛpən]', meaning: 'n. 武器', sentence: 'A sharp stone can be a primitive weapon.' },
+            'shelter': { kk: '[ˈʃɛltɚ]', meaning: 'n. 避難所；遮蔽處', sentence: 'They built a shelter to protect themselves from the rain.' },
+            'frame': { kk: '[frem]', meaning: 'n. 框架；結構', sentence: 'The frame of the house is made of wood.' },
+            'secure': { kk: '[sɪˈkjʊr]', meaning: 'v. 固定；保護', sentence: 'Secure the tent with ropes so it doesn\'t blow away.' },
+            'trapped': { kk: '[træpt]', meaning: 'adj. 被困住的', sentence: 'The miners were trapped underground after the explosion.' },
+            'reinforcements': { kk: '[ˌriɪnˈfɔrsmənts]', meaning: 'n. 援軍；增援部隊', sentence: 'The commander called for reinforcements.' },
+            'surrounding': { kk: '[səˈraʊndɪŋ]', meaning: 'adj. 周圍的', sentence: 'The surrounding area was searched for clues.' },
+            'flanking': { kk: '[ˈflæŋkɪŋ]', meaning: 'v. 側翼包抄', sentence: 'The enemy is flanking us from the right.' },
+            'generator': { kk: '[ˈdʒɛnəˌretɚ]', meaning: 'n. 發電機', sentence: 'We need fuel to run the generator.' },
+            'contaminated': { kk: '[kənˈtæməˌnetɪd]', meaning: 'adj. 被污染的', sentence: 'The water source is contaminated and not safe to drink.' },
+            'antidote': { kk: '[ˈæntɪˌdot]', meaning: 'n. 解毒劑', sentence: 'Scientists are working to find an antidote for the poison.' },
+        };
+
+        // Game State
+        const gameState = {
+            comprehension: 0,
+            vocabulary: 0,
+            level: 1,
+            xp: 0,
+            xpToNextLevel: 100,
+            currentMission: 0,
+            inventory: {},
+            journal: []
+        };
+
+        // Mission Database
+        const missions = [
+            {
+                type: '藍圖解讀 Blueprint Reading',
+                title: '🔧 製作避難所',
+                content: 'You found a blueprint for building a shelter. Read the instructions carefully:\n\n"To build a basic shelter, you need: 10 pieces of wood, 5 steel sheets, and 2 ropes. First, create a frame with the wood. Then, cover it with steel sheets for protection. Finally, secure everything with ropes."\n\nWhat materials do you need?',
+                question: 'According to the blueprint, what should you do FIRST?',
+                options: [
+                    { text: 'A) Cover with metal sheets', correct: false },
+                    { text: 'B) Create a frame with wood', correct: true },
+                    { text: 'C) Secure with ropes', correct: false },
+                    { text: 'D) Gather all materials', correct: false }
+                ],
+                reward: { items: [{ name: 'Wood', count: 10, desc: '木材 - 基礎建築材料' }, { name: 'Steel', count: 5, desc: '鋼鐵 - 堅固的建築材料' }] },
+                xp: 30,
+                vocabulary: ['shelter', 'frame', 'secure']
+            },
+            {
+                type: '情報分析 Intel Analysis',
+                title: '📻 求救訊號',
+                content: 'You intercepted a radio message:\n\n"This is Delta Squad requesting immediate assistance. We are trapped at the old factory, 5 kilometers north of the river. Low on ammunition. Three injured. Enemy forces surrounding the building. Send reinforcements before sunset."\n\nAnalyze this intelligence report.',
+                question: 'What is the MOST urgent problem Delta Squad is facing?',
+                options: [
+                    { text: 'A) They are far from the river', correct: false },
+                    { text: 'B) They have injured members', correct: false },
+                    { text: 'C) Enemy forces are surrounding them', correct: true },
+                    { text: 'D) They are in an old factory', correct: false }
+                ],
+                reward: { items: [{ name: 'Ammunition', count: 20, desc: '彈藥 - 戰鬥必需品' }] },
+                xp: 40,
+                vocabulary: ['trapped', 'reinforcements', 'surrounding']
+            },
+            {
+                type: '口說任務 Speaking Challenge',
+                title: '🎤 戰術溝通',
+                content: 'You need to warn your team about enemy movement. Practice the following command.',
+                speakText: 'Enemy is flanking us from the north!',
+                xp: 50,
+                reward: { items: [{ name: 'Radio', count: 1, desc: '無線電 - 遠距離通訊設備' }] },
+                vocabulary: ['flanking']
+            },
+            {
+                type: '技術手冊 Technical Manual',
+                title: '⚡️ 修復發電機',
+                content: 'The power is out. You found the manual for the emergency generator.\n\n"To start the generator, first check the fuel level. If low, refuel. Second, turn the main switch to the ON position. Third, pull the starter cord firmly. The generator provides power but is very loud."',
+                question: 'What is the second step to start the generator?',
+                options: [
+                    { text: 'A) Pull the starter cord', correct: false },
+                    { text: 'B) Refuel the generator', correct: false },
+                    { text: 'C) Turn the main switch ON', correct: true },
+                    { text: 'D) Check for noise', correct: false }
+                ],
+                reward: { items: [{ name: 'Fuel Canister', count: 1, desc: '燃料罐 - 可為載具或機器補充燃料' }] },
+                xp: 35,
+                vocabulary: ['generator']
+            },
+            {
+                type: '醫療報告 Medical Report',
+                title: '☣️ 分析樣本',
+                content: 'A teammate is sick. You analyze a water sample from the camp.\n\n"Analysis Result: Water sample is highly contaminated with an unknown biological agent. Symptoms include fever and disorientation. An antidote is required immediately. Standard purification tablets are ineffective."',
+                question: 'What is the key finding from the report?',
+                options: [
+                    { text: 'A) The water is just dirty', correct: false },
+                    { text: 'B) The water is contaminated and needs a specific antidote', correct: true },
+                    { text: 'C) Purification tablets will solve the problem', correct: false },
+                    { text: 'D) The teammate has a simple fever', correct: false }
+                ],
+                reward: { items: [{ name: 'Research Notes', count: 1, desc: '研究筆記 - 可能包含解毒劑的線索' }] },
+                xp: 45,
+                vocabulary: ['contaminated', 'antidote']
+            }
+        ];
+
+        let wordDetailModal;
+
+        // Update UI
+        function updateUI() {
+            document.getElementById('comprehension-bar').style.width = gameState.comprehension + '%';
+            document.getElementById('comprehension-bar').textContent = gameState.comprehension + '%';
+            const vocabProgress = Math.min(100, Math.floor((gameState.journal.length / Object.keys(wordDB).length) * 100));
+            gameState.vocabulary = vocabProgress;
+            document.getElementById('vocabulary-bar').style.width = vocabProgress + '%';
+            document.getElementById('vocabulary-bar').textContent = vocabProgress + '%';
+            document.getElementById('player-level').textContent = gameState.level;
+            document.getElementById('player-xp').textContent = gameState.xp;
+            document.getElementById('xp-to-next-level').textContent = gameState.xpToNextLevel;
+
+            // Update inventory
+            const inventoryList = document.getElementById('inventory-list');
+            inventoryList.innerHTML = '';
+            for (let [item, data] of Object.entries(gameState.inventory)) {
+                inventoryList.innerHTML += `
+                    <div class="inventory-item">
+                        <div class="item-name">${item} <span class="item-count">x${data.count}</span></div>
+                        <div class="item-desc">${data.desc}</div>
+                    </div>
+                `;
+            }
+
+            // Update craft button
+            const craftBtn = document.getElementById('craft-hint-btn');
+            const canCraft = gameState.inventory['Steel'] && gameState.inventory['Steel'].count >= 5;
+            craftBtn.disabled = !canCraft;
+            craftBtn.title = canCraft ? '製作一個提示道具' : '需要 5 個鋼鐵';
+
+            // Update journal
+            const journalList = document.getElementById('journal-list');
+            journalList.innerHTML = '';
+            gameState.journal.forEach(entry => {
+                journalList.innerHTML += `
+                    <div class="journal-entry" style="cursor: pointer;" onclick="showWordDetails('${entry.word}')">
+                        <span class="word">${entry.word}</span> - <span class="translation">${entry.translation}</span>
+                    </div>
+                `;
+            });
+
+            // Update level icon
+            const levelIcons = ['🛡️', '⚔️', '🎖️', '🌟', '👑'];
+            const iconIndex = Math.min(gameState.level - 1, levelIcons.length - 1);
+            document.getElementById('level-icon').textContent = levelIcons[iconIndex];
+            document.getElementById('level-icon').title = `等級 ${gameState.level}`;
+
+
+        }
+
+        // Load Mission
+        function loadMission(index) {
+            if (index >= missions.length) {
+                showFeedback('🎉 Congratulations! All missions completed!', true);
+                return;
+            }
+
+            const mission = missions[index];
+            document.getElementById('mission-title').textContent = mission.title;
+            document.getElementById('mission-type').textContent = `[ ${mission.type} ]`;
+            
+            const contentDiv = document.getElementById('mission-content');
+            const optionsDiv = document.getElementById('mission-options');
+
+            if (mission.type.includes('Speaking')) {
+                contentDiv.innerHTML = `
+                    <p style="line-height: 1.8;">${mission.content}</p>
+                    <div class="speaking-challenge">
+                        <div class="speak-prompt">🎤 請大聲說出以下句子：</div>
+                        <div class="speak-text">"${mission.speakText}"</div>
+                        <button class="speak-btn" id="speak-btn" onclick="handleSpeaking()">
+                            <span id="speak-btn-icon">🎙️</span> 按住錄音
+                        </button>
+                        <button class="speak-btn" id="confirm-speak-btn" style="display:none; background: linear-gradient(135deg, #00ff88, #00cc6a);" onclick="completeSpeakingMission()">
+                            ✅ 確認完成
+                        </button>
+                    </div>
+                `;
+                optionsDiv.innerHTML = '';
+            } else {
+                contentDiv.innerHTML = `
+                    <p style="line-height: 1.8;">${mission.content}</p>
+                    <div class="mission-question">${mission.question}</div>
+                `;
+
+                optionsDiv.innerHTML = '<div class="options"></div>';
+                const optionsContainer = optionsDiv.querySelector('.options');
+                
+                mission.options.forEach((option, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = option.text;
+                    btn.onclick = (event) => checkAnswer(event, option.correct, mission);
+                    optionsContainer.appendChild(btn);
+                });
+            }
+
+            document.getElementById('next-mission-btn').style.display = 'none';
+        }
+
+        function checkAnswer(event, isCorrect, mission) {
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                const optionText = btn.textContent;
+                const correctOption = mission.options.find(o => o.correct);
+                if (btn.textContent === correctOption.text) {
+                    btn.classList.add('correct');
+                }
+            });
+
+            if (isCorrect) {
+                event.target.classList.add('correct');
+                showFeedback('✅ Correct! Mission Complete!', true);
+                gameState.comprehension = Math.min(100, gameState.comprehension + 15);
+                giveReward(mission);
+            } else {
+                event.target.classList.add('wrong');
+                showFeedback('❌ Wrong Answer! Comprehension -10', false);
+                gameState.comprehension = Math.max(0, gameState.comprehension - 10);
+                updateUI();
+                
+                setTimeout(() => {
+                    buttons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.classList.remove('wrong', 'correct');
+                    });
+                }, 2000);
+            }
+        }
+
+        function handleSpeaking() {
+            const speakBtn = document.getElementById('speak-btn');
+            const confirmBtn = document.getElementById('confirm-speak-btn');
+            const icon = document.getElementById('speak-btn-icon');
+
+            speakBtn.disabled = true;
+            speakBtn.textContent = '... 錄音中 ...';
+            icon.textContent = '🔴';
+
+            setTimeout(() => {
+                speakBtn.style.display = 'none';
+                confirmBtn.style.display = 'block';
+            }, 2000);
+        }
+
+        function completeSpeakingMission() {
+            const mission = missions[gameState.currentMission];
+            showFeedback('🎤 Great Speaking! Mission Complete!', true);
+            gameState.comprehension = Math.min(100, gameState.comprehension + 20);
+            giveReward(mission);
+        }
+
+        function giveReward(mission) {
+            // Add XP
+            gameState.xp += mission.xp;
+            if (gameState.xp >= gameState.xpToNextLevel) {
+                const oldLevel = gameState.level;
+                gameState.level++;
+                gameState.xp -= gameState.xpToNextLevel;
+                gameState.xpToNextLevel = Math.floor(gameState.xpToNextLevel * 1.5);
+                showFeedback(`🆙 Level Up! You are now Level ${gameState.level}!`, true);
+
+                // Level up resource reward
+                const levelUpReward = { name: 'Steel', count: 3 * oldLevel, desc: '鋼鐵 - 堅固的建築材料' };
+                addItemToInventory(levelUpReward.name, levelUpReward.count, levelUpReward.desc);
+                setTimeout(() => showFeedback(`🎁 升級獎勵: ${levelUpReward.name} x${levelUpReward.count}`, true), 500);
+            }
+
+            // Add items
+            if (mission.reward && mission.reward.items) {
+                mission.reward.items.forEach(item => {
+                    addItemToInventory(item.name, item.count, item.desc);
+                });
+            }
+
+            function addItemToInventory(name, count, desc) {
+                 if (gameState.inventory[name]) {
+                    gameState.inventory[name].count += count;
+                } else {
+                    gameState.inventory[name] = { count, desc };
+                }
+            }
+
+            // Add vocabulary
+            if (mission.vocabulary) {
+                mission.vocabulary.forEach(word => {
+                    const normalizedWord = word.toLowerCase();
+                    if (!gameState.journal.find(j => j.word.toLowerCase() === normalizedWord)) {
+                        const wordData = wordDB[normalizedWord];
+                        gameState.journal.push({ word: word.charAt(0).toUpperCase() + word.slice(1), translation: wordData ? wordData.meaning.split(' ')[1] : '新單字' });
+                    }
+                });
+            }
+
+            gameState.vocabulary = Math.min(100, gameState.vocabulary + 5);
+            updateUI();
+
+            // Show next mission button
+            document.getElementById('next-mission-btn').style.display = 'block';
+            document.getElementById('next-mission-btn').onclick = () => {
+                gameState.currentMission++;
+                loadMission(gameState.currentMission);
+            };
+        }
+
+        function showFeedback(message, isSuccess) {
+            const feedback = document.createElement('div');
+            feedback.className = 'feedback ' + (isSuccess ? 'success' : 'error');
+            feedback.textContent = message;
+            document.body.appendChild(feedback);
+            setTimeout(() => feedback.remove(), 2000);
+        }
+
+        function showWordDetails(word) {
+            const normalizedWord = word.toLowerCase();
+            const details = wordDB[normalizedWord];
+            if (!details) return;
+
+            const modalBody = document.getElementById('wordDetailBody');
+            modalBody.innerHTML = `
+                <h3 class="word-details-title">${word}</h3>
+                <p class="word-details-kk">${details.kk}</p>
+                <p class="word-details-meaning"><strong>意思:</strong> ${details.meaning}</p>
+                <div class="word-details-sentence">
+                    <strong>例句:</strong> ${details.sentence}
+                </div>
+                <button class="btn btn-info mt-3" onclick="speakText('${details.sentence}')">🔊 朗讀例句</button>
+            `;
+
+            wordDetailModal.show();
+        }
+
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('Your browser does not support text-to-speech.');
+            }
+        }
+
+        function craftHint() {
+            if (gameState.inventory['Steel'] && gameState.inventory['Steel'].count >= 5) {
+                gameState.inventory['Steel'].count -= 5;
+                if (gameState.inventory['Hint']) {
+                    gameState.inventory['Hint'].count += 1;
+                } else {
+                    gameState.inventory['Hint'] = { count: 1, desc: '提示 - 在選擇題任務中高亮正確答案' };
+                }
+                showFeedback('🛠️ 成功製作一個提示！', true);
+                updateUI();
+            }
+        }
+
+        // Initialize game
+        document.addEventListener('DOMContentLoaded', () => {
+            wordDetailModal = new bootstrap.Modal(document.getElementById('wordDetailModal'));
+            
+            // Initial items
+            gameState.inventory['Steel'] = { count: 5, desc: '鋼鐵 - 堅固的建築材料' };
+            updateUI();
+            loadMission(0);
+        });
+    </script>
+</body>
+</html>

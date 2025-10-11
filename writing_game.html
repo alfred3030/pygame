@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作文冒險王</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="bg-light">
+
+    <div class="container mx-auto mt-8">
+        <div class="row flex">
+            <div class="col-md-8 w-2/3 px-4">
+                <div class="writing-area bg-white rounded-lg shadow-md p-6 mb-4">
+                    <h2 class="mb-3"><i class="fas fa-pencil-alt"></i> 題目：我最難忘的一天</h2>
+                    <div class="mb-3">
+                        <i class="far fa-clock"></i> 剩餘時間：<span id="time-left">18:30</span>
+                        <span class="ms-3"><i class="fas fa-fire"></i> 2x加倍：<span id="bonus-time">00:45</span></span>
+                    </div>
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" style="width: 52%" aria-valuenow="52" aria-valuemin="0" aria-valuemax="100">52%</div>
+                    </div>
+                    <textarea class="form-control" rows="12" placeholder="開始你的寫作..."></textarea>
+                    <div class="mt-3">
+                        <i class="fas fa-chart-bar"></i> 字數: 235/600
+                        <span class="ms-3"><i class="fas fa-palette"></i> 已使用: 比喻x2, 排比x1</span>
+                    </div>
+                    <div class="mt-2">
+                        <i class="fas fa-comment-dots"></i> 提示：可以加入感官描寫！
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 w-1/3 px-4">
+                <div class="task-board bg-white rounded-lg shadow-md p-4">
+                    <h4 class="mb-3"><i class="fas fa-tasks"></i> 任務版</h4>
+                    <div class="list-group">
+                        <a href="#" class="list-group-item list-group-item-action active" aria-current="true">
+                            <i class="fas fa-check-circle"></i> 段落 1
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action"><i class="fas fa-check-circle"></i> 段落 2</a>
+                        <a href="#" class="list-group-item list-group-item-action"><i class="fas fa-spinner fa-spin"></i> 段落 3</a>
+                        <a href="#" class="list-group-item list-group-item-action disabled"><i class="fas fa-lock"></i> 段落 4</a>
+                    </div>
+                    <h4 class="mt-3"><i class="fas fa-magic"></i> 快速道具</h4>
+                    <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-2 w-full"><i class="far fa-clock"></i> +60秒</button>
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"><i class="far fa-lightbulb"></i> 靈感</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 小挑戰 Modal -->
+    <div class="modal fade" id="challengeModal" tabindex="-1" aria-labelledby="challengeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="challengeModalLabel"><i class="fas fa-bolt"></i> 快問快答挑戰！</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>以下哪個是「譬喻」？</p>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="challengeOptions" id="optionA">
+                        <label class="form-check-label" for="optionA">A 他跑得像風一樣快</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="challengeOptions" id="optionB">
+                        <label class="form-check-label" for="optionB">B 風啊，你輕輕吹</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="challengeOptions" id="optionC">
+                        <label class="form-check-label" for="optionC">C 呼呼呼～風吹過</label>
+                    </div>
+                    <p class="mt-2"><i class="far fa-clock"></i> 15秒內作答</p>
+                    <p class="text-green-600"><i class="fas fa-gift"></i> 答對：+30秒 ＋ 2x金幣(60秒)</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">跳過</button>
+                    <button type="button" class="btn btn-primary">確認</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</body>

@@ -3,6 +3,10 @@ from pygame.locals import *
 
 pygame.init()
 
+clock = pygame.time.Clock()
+fps = 60
+
+
 screen_width = 1000
 screen_height = 1000
 
@@ -20,8 +24,14 @@ sun_img = pygame.image.load('assets/img/sun.png')
 
 class Player():
      def __init__(self, x, y):
-          img = pygame.image.load('assets/img/guy1.png')
-          self.image = pygame.transform.scale(img, (40, 80))
+          self.images_right = []
+          self.index = 0
+          self.counter = 0
+          for num in range(1, 5):
+              img_right = pygame.image.load(f'assets/img/guy{num}.png')
+              img_right = pygame.transform.scale(img_right, (40, 80))
+              self.images_right.append(img_right)
+          self.image = self.images_right[self.index]
           self.rect = self.image.get_rect()
           self.rect.x = x
           self.rect.y = y
@@ -44,6 +54,11 @@ class Player():
                dx -= 5
           if key[pygame.K_RIGHT]:
                dx += 5
+
+          self.index += 1
+          if self.index >= len(self.images_right):
+              self.index = 0
+          self.images_right[self.index]
 
           #add gravity
           self.vel_y += 1
@@ -133,8 +148,8 @@ world = World(world_data)
 # 遊戲迴圈
 run = True
 while run:
-      
-    # 畫背景和太陽
+    
+    clock.tick(fps)
     screen.blit(bg_img, (0, 0))
     screen.blit(sun_img, (100, 100))
 

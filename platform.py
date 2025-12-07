@@ -1,9 +1,11 @@
 import pygame
 from pygame.locals import *
+from pygame import mixer
 import pickle
 from os import path
 
-
+pygame.mixer.pre_init(44100, -16, 2, 512)
+mixer.init()
 pygame.init()
 
 clock = pygame.time.Clock()
@@ -26,8 +28,8 @@ font_score = pygame.font.SysFont('Bauhaus 93', 30)
 tile_size = 50
 game_over = 0
 main_menu = True
-level = 5
-max_levels = 5
+level = 6
+max_levels = 6
 score = 0
 
 #define colours
@@ -39,6 +41,16 @@ blue = (0, 0, 255)
 bg_img = pygame.image.load('assets/img/sky.png')
 sun_img = pygame.image.load('assets/img/sun.png')
 restart_img = pygame.image.load('assets/img/restart_btn.png')
+
+#load sounds
+pygame.mixer.music.load('assets/img/music.wav')
+pygame.mixer.music.play(-1, 0.0, 5000)
+coin_fx = pygame.mixer.Sound('assets/img/coin.wav')
+coin_fx.set_volume(0.5)
+jump_fx = pygame.mixer.Sound('assets/img/jump.wav')
+jump_fx.set_volume(0.5)
+game_over_fx = pygame.mixer.Sound('assets/img/game_over.wav')
+game_over_fx.set_volume(0.5)
 
 def draw_text(text, font, text_col, x, y):
      img = font.render(text, True, text_col)
@@ -116,6 +128,7 @@ class Player():
                #get keypresses
                key = pygame.key.get_pressed()
                if key[pygame.K_UP] and self.jumped == False == False and self.in_air == False:
+                    jump_fx.play()
                     self.vel_y = -15
                     self.jumped = True
                if key[pygame.K_UP] == False:
@@ -178,15 +191,16 @@ class Player():
                #check for collision with enemies
                if pygame.sprite.spritecollide(self, blob_group, False):
                     game_over = -1
+                    game_over_fx.play()
 
                #check for collision with lava
                if pygame.sprite.spritecollide(self, lava_group, False):
                     game_over = -1    
-                    
+                    game_over_fx.play()
+
                #check for collision with exit
                if pygame.sprite.spritecollide(self, exit_group, False):
-                    game_over = 1   
-               
+                    game_over = 1                  
 
                #update player coordinates
                self.rect.x += dx
@@ -253,6 +267,32 @@ class Enemy(pygame.sprite.Sprite):
                self.move_direction *= -1
                self.move_counter *= -1
 
+
+class Platform(pygame.sprite.Sprite):
+    def __init__(self, x, y, move_x, move_y):
+          pygame.sprite.Sprite.__init__(self)
+          img = pygame.image.load('assets/img/platform.png')
+          self.image = pygame.transform.scale(img, (tile_size, tile_size // 2))
+          self.rect = self.image.get_rect()
+          self.rect.x = x
+          self.rect.y = y
+          self.move_counter = 0
+          self.move_direction = 1
+          self.move_x = move_x
+          self.move_y = move_y
+
+
+    def update(self):
+          self.rect.x += self.move_direction * self.move_x
+          self.rect.y += self.move_direction * self.move_y
+          self.move_counter += 1
+          if abs(self.move_counter) > 50:
+               self.move_direction *= -1
+               self.move_counter *= -1
+
+
+
+
 class Lava(pygame.sprite.Sprite):
     def __init__(self, x, y):
           pygame.sprite.Sprite.__init__(self)
@@ -300,7 +340,6 @@ class World():
                         img_rect.y = row_count * tile_size
                         tile = (img, img_rect)
                         self.tile_list.append(tile)
-
                     if tile == 2:
                         img = pygame.transform.scale(grass_img, (tile_size, tile_size))
                         img_rect = img.get_rect()
@@ -308,10 +347,15 @@ class World():
                         img_rect.y = row_count * tile_size
                         tile = (img, img_rect)
                         self.tile_list.append(tile)
-
                     if tile == 3:
                         blob = Enemy(col_count * tile_size, row_count * tile_size + 15)
                         blob_group.add(blob)
+                    if tile == 4:
+                         platform = Platform(col_count * tile_size, row_count * tile_size + tile_size, 1, 0)
+                         Platform_group.add(platform)
+                    if tile == 5:
+                         platform = Platform(col_count * tile_size, row_count * tile_size + tile_size, 0, 1)
+                         Platform_group.add(platform)                 
                     if tile == 6:
                          lava = Lava(col_count * tile_size, row_count * tile_size + (tile_size // 2))
                          lava_group.add(lava)
@@ -334,6 +378,7 @@ class World():
 player = Player(100, screen_height - 130)
 
 blob_group = pygame.sprite.Group()
+Platform_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
 coin_group = pygame.sprite.Group()
@@ -363,16 +408,19 @@ while run:
 
     if game_over == 0:
         blob_group.update()
+        Platform_group.update()
+
         #update score
         #check if a coin has been collected
         if pygame.sprite.spritecollide(player, coin_group, True):
             score += 1
+            coin_fx.play()
         draw_text('X ' + str(score), font_score, (255, 255, 255), tile_size - 10, 10)
     
 
 
 
-    blob_group.update()
+    Platform_group.draw(screen)
     blob_group.draw(screen)
     lava_group.draw(screen)
     exit_group.draw(screen)
